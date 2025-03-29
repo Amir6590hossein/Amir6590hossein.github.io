@@ -61,7 +61,12 @@ function GET(name, url) {
 }
 
 if (GET('name', window.location.href) !== null) {
-    $(".personName").text(atob(GET('name', window.location.href)));
+
+
+    let decodedText = decodeURIComponent(Array.prototype.map.call(atob(GET('name', window.location.href)), function(c) {
+        return '%' + c.charCodeAt(0).toString(16).padStart(2, '0');
+      }).join(''));
+    $(".personName").text(decodedText)
 } else {
     $(".invitee").html("&nbsp;");
 }

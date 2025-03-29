@@ -15,14 +15,14 @@ canvas {display: block; position: absolute; /* touch-action: none;*/ top: 0;left
 .wrapper:focus { outline: 0; } 
 .clash-card { background: white; width: 300px; display: inline-block; margin: auto; border-radius: 19px; position: relative; text-align: center; box-shadow: -1px 15px 30px -12px black; z-index: 99; }
 
-.barbarian { height: 500px; background: rgb(4, 36, 47); background: linear-gradient(90deg, rgba(4, 36, 47, 1) 0%, rgba(2, 45, 61, 1) 46%, rgba(4, 36, 47, 1) 100%); position: relative; overflow: hidden; } 
+.barbarian { height: 500px; background: rgb(22, 221, 65); background: linear-gradient(90deg, rgb(2, 218, 74) 0%, rgb(30, 179, 50) 46%, rgb(30, 134, 16) 100%); position: relative; overflow: hidden; } 
 .leaf { background-image: url(../images/leaf.png); background-size: contain; background-repeat: no-repeat; width: 100%; height: 100%; position: absolute; top: -20px; } 
 .letter-box { position: absolute; top: 30%; width: 100%; font-size: 20px; letter-spacing: 0.5px; }
 .invitee { margin-bottom: 25px; font-size: 14px; margin-top: 20px;}
 span.personName { font-size: 20px; }
 .inviters { font-size: 24px; padding: 20px 0; line-height: 30px; }
 .wrap-box { padding: 10px 0 20px 0; } 
-.invitation {font-weight: 400; font-size: 18px; letter-spacing: 0.6px; line-height: 24px; }
+.invitation {font-weight: 400; font-size: 18px; letter-spacing: 0.6px; line-height: 24px; ;padding: left 20px right 20px;}
 .label-box, .label-box:hover, .label-box:visited { background-color: #FBDE79; color: rgb(4, 36, 47); font-size: 16px; font-weight: 700; border-radius: 10px; padding: 5px 10px; letter-spacing: 1px; }
 sup { text-transform: lowercase; font-size: 12px; top: -5px; position: relative; }
 .timeline:before { content: ''; height: 100%; width: 2px; background-color: #FBDE79; display: block; position: absolute; left: 50%; }

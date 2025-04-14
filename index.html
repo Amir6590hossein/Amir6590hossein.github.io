@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Differential Equations Exercises</title>
+    <title>Differential Equations Quiz</title>
+    
 
     <!-- افزودن Reveal.js از طریق CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
@@ -12,191 +13,1097 @@
 
     <!-- استایل‌های سفارشی -->
     <style>
-        .small-text {
-            font-size: 0.6em; /* کوچک‌تر کردن اندازه فونت */
+        .reveal section {
+            overflow-y: auto;
+            max-height: 90vh; /* تنظیم ارتفاع حداکثری برای اسلاید */
         }
-        .rtl {
-            direction: rtl; /* راست‌چین کردن متن فارسی */
+        /* استایل‌های سفارشی */
+        .question-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .option-wrapper {
+            margin: 15px 0;
+        }
+        
+        .option {
+            display: block;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid #555;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 0.7em;
+        }
+        
+        .option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .option.selected {
+            border-color: #4fc3f7;
+            background: rgba(79, 195, 247, 0.2);
+        }
+        
+        .option.correct {
+            border-color: #81c784;
+            background: rgba(129, 199, 132, 0.2);
+        }
+        
+        .option.incorrect {
+            border-color: #e57373;
+            background: rgba(229, 115, 115, 0.2);
+        }
+        
+        .meaning {
+            display: none;
+            font-size: 0.7em;
+            color: #aaa;
+            padding: 5px 10px;
+            border-right: 3px solid #4fc3f7;
+            margin-top: 5px;
             text-align: right;
-            font-family: 'XB Niloofar', Arial, sans-serif; /* فونت فارسی */
+            direction: rtl;
         }
+        
+        .nextButton {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        
+        .nextButton:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .question-meaning, .correct-answer {
+            display: none;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .small-text {
+            font-size: 0.8em;
+        }
+        
         .ltr {
-            direction: ltr; /* چپ‌چین کردن متن انگلیسی */
+            direction: ltr;
             text-align: left;
         }
-        .correct {
-            color: green; /* رنگ سبز برای تیک */
-        }
-        .incorrect {
-            color: red; /* رنگ قرمز برای ضربدر */
-        }
-
-
         
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .correct {
+            color: #81c784;
+        }
+        
+        /* انیمیشن‌ها */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .compact-translation {
+        background: rgba(0,0,0,0.7);
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 0.9em;
+    }
+    .translation-container {
+        background: rgba(0,0,0,0.8);
+        padding: 25px;
+        border-radius: 15px;
+        max-width: 900px;
+        margin: 0 auto;
+        font-size: 0.7em;
+    }
+    
+    .english-text {
+        background: rgba(255,255,255,0.1);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .persian-translation {
+        background: rgba(79,195,247,0.1);
+        padding: 20px;
+        border-radius: 10px;
+        border-right: 4px solid #4fc3f7;
+        text-align: right;
+        direction: rtl;
+    }
+    
+    /* رنگ‌های متفاوت برای هر اصطلاح */
+    .term1 { background-color: #FF9AA2; color: #000; padding: 2px 5px; border-radius: 3px; } /* arbitrary constants */
+    .term2 { background-color: #FFB7B2; color: #000; padding: 2px 5px; border-radius: 3px; } /* linear combination */
+    .term3 { background-color: #FFDAC1; color: #000; padding: 2px 5px; border-radius: 3px; } /* homogeneous of degree 1 */
+    .term4 { background-color: #E2F0CB; color: #000; padding: 2px 5px; border-radius: 3px; } /* homogeneous linear equation */
+    .term5 { background-color: #B5EAD7; color: #000; padding: 2px 5px; border-radius: 3px; } /* particular solutions */
+    .term6 { background-color: #C7CEEA; color: #000; padding: 2px 5px; border-radius: 3px; } /* linear combination */
+
+
+    .compact-tf-exercise {
+        background: rgba(0,0,0,0.8);
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 850px;
+        margin: 0 auto;
+        font-size: 0.85em;
+    }
+    
+    .tf-statements {
+        margin: 15px 0;
+    }
+    
+    .tf-statement {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    
+    .tf-checkbox {
+        font-size: 1.3em;
+        margin-left: 10px;
+        cursor: pointer;
+        user-select: none;
+        min-width: 25px;
+    }
+    
+    .tf-content {
+        flex: 1;
+    }
+    
+    .tf-english {
+        color: #e0e0e0;
+        margin-bottom: 5px;
+        text-align: left;
+        font-size: 0.95em;
+    }
+    
+    .tf-persian {
+        color: #aaa;
+        font-size: 0.8em;
+        text-align: right;
+        direction: rtl;
+        margin: 5px 0;
+    }
+    
+    .tf-feedback {
+        font-size: 0.8em;
+        text-align: right;
+        direction: rtl;
+        height: 18px;
+    }
+    
+    .tf-check-btn, .tf-show-translation {
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-size: 0.9em;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .tf-show-translation {
+        background-color: #1565c0;
+        display: none;
+    }
+    
+    .tf-check-btn:hover {
+        background-color: #1b5e20;
+    }
+    
+    .tf-show-translation:hover {
+        background-color: #0d47a1;
+    }
+    
+    /* حالت‌های پاسخ */
+    .tf-correct .tf-checkbox {
+        color: #4caf50;
+    }
+    
+    .tf-incorrect .tf-checkbox {
+        color: #f44336;
+    }
+    
+    .tf-selected .tf-checkbox {
+        font-weight: bold;
+        color: #64b5f6;
+    }
+    
+    .tf-feedback-correct {
+        color: #81c784;
+    }
+    
+    .tf-feedback-incorrect {
+        color: #e57373;
+    }
+
+
+
+  
+       .fill-blank-final {
+        background: rgba(0,0,0,0.8);
+        padding: 25px;
+        border-radius: 15px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    /* استایل جعبه کلمات */
+    .word-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 25px;
+        justify-content: center;
+    }
+    
+    .word {
+        background: linear-gradient(135deg, #4fc3f7, #2196F3);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: grab;
+        user-select: none;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        transition: all 0.3s;
+        font-size: 0.95em;
+    }
+    
+    .word:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+    
+    /* استایل متن تمرین */
+    .passage {
+        background: rgba(255,255,255,0.1);
+        padding: 25px;
+        border-radius: 10px;
+        line-height: 2;
+        margin-bottom: 30px;
+        font-size: 0.95em;
+    }
+    
+    .blank {
+        display: inline-block;
+        min-width: 90px;
+        border-bottom: 2px dashed #4fc3f7;
+        text-align: center;
+        position: relative;
+        padding: 0 5px;
+        margin: 0 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .blank:hover {
+        background: rgba(79,195,247,0.2);
+    }
+    
+    .blank.filled {
+        border-bottom: 2px solid #81c784;
+    }
+    
+    .blank.incorrect {
+        border-bottom: 2px solid #e57373;
+    }
+    
+    /* استایل دکمه‌ها */
+    .hint-btn, .check-btn, .solution-btn {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s;
+        margin: 0 10px 15px 0;
+    }
+    
+    .check-btn {
+        background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    }
+    
+    .solution-btn {
+        background: linear-gradient(135deg, #ff8f00, #e65100);
+    }
+    
+    .hint-btn:hover, .check-btn:hover, .solution-btn:hover   {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .icon {
+        font-size: 1.2em;
+    }
+    
+    /* استایل راهنما */
+    .hint-area {
+        background: rgba(255,235,59,0.15);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 25px;
+        border-right: 3px solid #ffeb3b;
+        text-align: right;
+        direction: rtl;
+    }
+    
+    .hint-area h4 {
+        color: #ffeb3b;
+        margin-bottom: 10px;
+    }
+
+
+
+
+
+    /* استایل بخش ترجمه */
+.translation-area {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    line-height: 1.8;
+    color: #fff;
+}
+
+.translated {
+    font-weight: bold;
+    color: #ffeb3b;
+    transition: all 0.3s ease;
+}
+
+.translated.highlight {
+    background: #ffeb3b;
+    color: #000;
+    padding: 2px 5px;
+    border-radius: 5px;
+}
+
+
+/* استایل دکمه نمایش ترجمه */
+.translate-btn {
+    background: linear-gradient(135deg, #4fc3f7, #2196F3);
+    color: white;
+    border: none;
+    padding: 12px 25px; /* بزرگ‌تر کردن فضای داخلی */
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+    margin: 0 10px 15px 0;
+}
+
+.translate-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+
+
+
+
+        .author-info {
+            text-align: center;
+            font-style: italic;
+            margin-top: 20px;
+        }
+        .exercise-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-
     <div class="reveal">
         <div class="slides">
 
-            <!-- اسلاید عنوان -->
+
+
+
             <section>
-                <h1>Differential Equations Exercises</h1>
-                <p>Your Name</p>
-                <p>Your University</p>
-                <p>\today</p>
+                <h1>English for Students of Mathematics</h1>
+                <p class="author-info">By Dr. Mehrdad Ahmadzadeh</p>
+                <p class="author-info">Amir Hossein Amjadian<br>Razi University</p>
+                <p class="exercise-title">Exercise: Lesson Six</p>
             </section>
+            
+            
+<!-- اسلاید تمرین ۱ (نسخه نهایی با دکمه‌های واضح) -->
+<section>
+    <section>
+        <div class="fill-blank-final">
+            <h2>تمرین ۱: جای خالی را پر کنید</h2>
+            <h3>معادلات دیفرانسیل</h3>
+            
+            <div class="word-bank">
+                <div class="word" draggable="true" data-word="particular">particular</div>
+                <div class="word" draggable="true" data-word="solution">solution</div>
+                <div class="word" draggable="true" data-word="set">set</div>
+                <div class="word" draggable="true" data-word="parameter">parameter</div>
+                <div class="word" draggable="true" data-word="relative">relative</div>
+            </div>
+            
+            <div class="passage">
+                <p>Each individual solution of a differential equation is called a 
+                particular solution.</p>
+                
+                <p>A general <span class="blank" data-answer="solution">______</span> 
+                of an ordinary differential equation is a nonempty 
+                <span class="blank" data-answer="set">______</span> 
+                of solutions specified by an expression which contains at least one 
+                <span class="blank" data-answer="parameter">______</span> 
+                and which becomes a representation of a 
+                <span class="blank" data-answer="particular">______</span> 
+                solution when its parameters are all replaced by numbers.</p>
+                
+                <p>A solution is said to be 
+                <span class="blank" data-answer="relative">______</span> 
+                to any given general solution if it does not belong to that solution set.</p>
+            </div>
+            
+            <!-- دکمه‌های خارج از div.controls -->
+            <button class="hint-btn">
+                <i class="icon">💡</i> نمایش راهنما
+            </button>
+            <button class="check-btn">
+                <i class="icon">✓</i> بررسی پاسخ‌ها
+            </button>
+            <button class="solution-btn" style="display:none">
+                <i class="icon">👁️</i> نمایش جواب
+            </button>
+            <button class="translate-btn">
+                <i class="icon">🌐</i> نمایش ترجمه
+            </button>
+            
+            <div class="hint-area" style="display:none">
+                <h4>راهنمایی:</h4>
+                <p>کلمات را می‌توانید با کشیدن و رها کردن در جای خالی قرار دهید</p>
+                <p>همچنین می‌توانید روی جای خالی کلیک کنید تا اولین کلمه مناسب قرار داده شود</p>
+            </div>
 
-            <!-- اسلاید تمرین ۱ -->
+            <!-- بخش ترجمه -->
+            <div class="translation-area" style="display:none; margin-top: 20px;">
+                <h4>ترجمه:</h4>
+                <p>هر جواب خاص یک معادله دیفرانسیل، <span class="translated" data-word="particular">جزئی</span> نامیده می‌شود.</p>
+                <p>یک جواب <span class="translated" data-word="solution">کلی</span> یک معادله دیفرانسیل معمولی، یک مجموعه <span class="translated" data-word="set">غیرتهی</span> از جواب‌هاست که توسط یک عبارت مشخص می‌شود و حداقل شامل یک <span class="translated" data-word="parameter">پارامتر</span> است و وقتی پارامترهای آن با اعداد جایگزین شوند، نماینده‌ای از یک جواب <span class="translated" data-word="particular">جزئی</span> خواهد بود.</p>
+                <p>یک جواب به یک جواب کلی داده شده <span class="translated" data-word="relative">نسبی</span> گفته می‌شود اگر به آن مجموعه جواب تعلق نداشته باشد.</p>
+            </div>
+        </div>
+    </section>
+</section>
+<!-- اسلاید تمرین ۲ -->
+
+<!-- اسلاید تمرین ۲ (نسخه نهایی با نمایش تأخیری ترجمه) -->
+<section>
+    <section>
+        <div class="compact-tf-exercise">
+            <h3>تمرین ۲: درست یا نادرست</h3>
+            <h4>خواندن درس ۶</h4>
+            
+            <div class="tf-statements">
+                <!-- مورد اول -->
+                <div class="tf-statement" data-answer="false">
+                    <span class="tf-checkbox">□</span>
+                    <div class="tf-content">
+                        <p class="tf-english">A partial differential equation is a special ordinary differential equation.</p>
+                        <p class="tf-persian" style="display:none">معادله دیفرانسیل جزئی یک معادله دیفرانسیل معمولی خاص است</p>
+                        <p class="tf-feedback"></p>
+                    </div>
+                </div>
+                
+                <!-- مورد دوم -->
+                <div class="tf-statement" data-answer="true">
+                    <span class="tf-checkbox">□</span>
+                    <div class="tf-content">
+                        <p class="tf-english">An initial value problem is a differential equation with an initial condition.</p>
+                        <p class="tf-persian" style="display:none">مسئله مقدار اولیه یک معادله دیفرانسیل با شرط اولیه است</p>
+                        <p class="tf-feedback"></p>
+                    </div>
+                </div>
+                
+                <!-- مورد سوم -->
+                <div class="tf-statement" data-answer="true">
+                    <span class="tf-checkbox">□</span>
+                    <div class="tf-content">
+                        <p class="tf-english">Three methods are discussed in lesson 6 for particular solutions of second-order equations.</p>
+                        <p class="tf-persian" style="display:none">سه روش در درس ۶ برای یافتن جواب خاص معادلات مرتبه دوم بحث شده</p>
+                        <p class="tf-feedback"></p>
+                    </div>
+                </div>
+                
+                <!-- مورد چهارم -->
+                <div class="tf-statement" data-answer="false">
+                    <span class="tf-checkbox">□</span>
+                    <div class="tf-content">
+                        <p class="tf-english">There is some information in lesson 6 regarding Bessel's equation.</p>
+                        <p class="tf-persian" style="display:none">اطلاعاتی درباره معادله بسل در درس ۶ وجود دارد</p>
+                        <p class="tf-feedback"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="tf-check-btn">بررسی پاسخ‌ها</button>
+            <button class="tf-show-translation" style="display:none; margin-top:8px">نمایش ترجمه فارسی</button>
+        </div>
+    </section>
+</section>
+
+            <!-- اسلاید سوال ۳ -->
             <section>
-                <h2>Exercise 1: Fill in the Blanks</h2>
-                <h3>Differential Equations</h3>
-                <p class="small-text">
-                    Each individual solution of a differential equation is called a 
-                    <span class="fragment" data-fragment-index="1">particular</span> solution. 
-                    A general 
-                    <span class="fragment" data-fragment-index="2">solution</span> 
-                    of an ordinary differential equation is a nonempty 
-                    <span class="fragment" data-fragment-index="3">set</span> 
-                    of solutions specified by an expression which contains at least one 
-                    <span class="fragment" data-fragment-index="4">parameter</span> 
-                    and which becomes a representation of a 
-                    <span class="fragment" data-fragment-index="5">particular</span> 
-                    solution when its parameters are all replaced by numbers. 
-                    A solution is said to be 
-                    <span class="fragment" data-fragment-index="6">relative</span> 
-                    to any given general solution if it does not belong to that solution set.
-                </p>
+                <section>
+                    <h2>Question 3</h2>
+                    <div class="question-container">
+                        <p class="small-text ltr">
+                            The order of a differential equation is .....
+                        </p>
+
+                        <div class="question-meaning">
+                            <p class="small-text rtl"><strong>معنی سوال:</strong> مرتبه یک معادله دیفرانسیل عبارت است از .....</p>
+                        </div>
+                                             
+                        <div class="correct-answer">
+                            <p class="small-text correct">✓ پاسخ صحیح: d) the order of the highest derivative appearing in the equation.</p>
+                        </div>   
+                        <div class="options">
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="a">□ a) the degree of the differential equation.</button>
+                                <div class="meaning">درجه معادله دیفرانسیل</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="b">□ b) the order of the lowest derivative appearing in the equation.</button>
+                                <div class="meaning">مرتبه کمترین مشتق موجود در معادله</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="c">□ c) the number of summands in the equation.</button>
+                                <div class="meaning">تعداد جملات موجود در معادله</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="d">□ d) the order of the highest derivative appearing in the equation.</button>
+                                <div class="meaning">مرتبه بالاترین مشتق موجود در معادله</div>
+                            </div>
+                        </div>
+                        
+                        <button class="nextButton" disabled>Next</button>
+                        
+
+
+                    </div>
+                </section>
             </section>
-
-            <!-- اسلاید تمرین ۲ -->
-            <section>
-                <h2>Exercise 2: True or False</h2>
-                <h3>Reading Lesson 6</h3>
-                <ol class="small-text">
-                    <!-- مورد اول -->
-                    <li class="rtl">
-                        <span class="fragment" data-fragment-index="1">□</span>
-                        <span class="fragment ltr" data-fragment-index="2">A partial differential equation is a special ordinary differential equation.</span>
-                        <span class="fragment rtl" data-fragment-index="3">(معنی فارسی: معادله دیفرانسیل جزئی یک معادله دیفرانسیل معمولی خاص است.)</span>
-                        <span class="fragment incorrect" data-fragment-index="4">✗</span> <!-- علامت ضربدر -->
-                    </li>
-                    <!-- مورد دوم -->
-                    <li class="rtl">
-                        <span class="fragment" data-fragment-index="5">□</span>
-                        <span class="fragment ltr" data-fragment-index="6">An initial value problem is a differential equation with an initial condition.</span>
-                        <span class="fragment rtl" data-fragment-index="7">(معنی فارسی: مسئله مقدار اولیه یک معادله دیفرانسیل با یک شرط اولیه است.)</span>
-                        <span class="fragment correct" data-fragment-index="8">✓</span> <!-- علامت تیک -->
-                    </li>
-                    <!-- مورد سوم -->
-                    <li class="rtl">
-                        <span class="fragment" data-fragment-index="9">□</span>
-                        <span class="fragment ltr" data-fragment-index="10">Three methods are discussed in lesson 6 for obtaining a particular solution for a second-order differential equation, once a homogeneous solution is known.</span>
-                        <span class="fragment rtl" data-fragment-index="11">(معنی فارسی: سه روش در درس ۶ برای به دست آوردن یک جواب خاص برای یک معادله دیفرانسیل مرتبه دوم، زمانی که جواب همگن شناخته شده است، بحث شده‌است.)</span>
-                        <span class="fragment correct" data-fragment-index="12">✓</span> <!-- علامت تیک -->
-                    </li>
-                    <!-- مورد چهارم -->
-                    <li class="rtl">
-                        <span class="fragment" data-fragment-index="13">□</span>
-                        <span class="fragment ltr" data-fragment-index="14">There is some information in lesson 6 regarding Bessel’s equation.</span>
-                        <span class="fragment rtl" data-fragment-index="15">(معنی فارسی: اطلاعاتی در درس ۶ در مورد معادله بسل وجود دارد.)</span>
-                        <span class="fragment incorrect" data-fragment-index="16">✗</span> <!-- علامت ضربدر -->
-                    </li>
-                </ol>
-            </section>
-
-
-               <!-- اسلاید سوال ۳ -->
-               <section>
-                <h2>Question 3</h2>
-                <p class="small-text ltr">
-                    The order of a differential equation is .....
-                </p>
-                <ol class="small-text ltr">
-                    <li class="fragment" data-fragment-index="1">□ a) the degree of the differential equation.</li>
-                    <li class="fragment" data-fragment-index="2">□ b) the order of the lowest derivative appearing in the equation.</li>
-                    <li class="fragment" data-fragment-index="3">□ c) the number of summands in the equation.</li>
-                    <li class="fragment" data-fragment-index="4">□ d) the order of the highest derivative appearing in the equation.</li>
-                </ol>
-                <p class="fragment rtl" data-fragment-index="5">
-                    (معنی فارسی: مرتبه یک معادله دیفرانسیل .... است.)
-                </p>
-                <p class="fragment correct" data-fragment-index="6">✓ پاسخ صحیح: d</p>
-            </section>
-
+            
             <!-- اسلاید سوال ۴ -->
             <section>
-                <h2>Question 4</h2>
-                <p class="small-text ltr">
-                    If a differential equation is multiplied by an integrating factor the result would be an ...
-                </p>
-                <ol class="small-text ltr">
-                    <li class="fragment" data-fragment-index="1">□ a) exact equation.</li>
-                    <li class="fragment" data-fragment-index="2">□ b) homogeneous equation.</li>
-                    <li class="fragment" data-fragment-index="3">□ c) a differential equation of the lower degree.</li>
-                    <li class="fragment" data-fragment-index="4">□ d) a differential equation of the higher degree.</li>
-                </ol>
-                <p class="fragment rtl" data-fragment-index="5">
-                    (معنی فارسی: اگر یک معادله دیفرانسیل در یک عامل انتگرال‌گیر ضرب شود، نتیجه یک ... خواهد بود.)
-                </p>
-                <p class="fragment correct" data-fragment-index="6">✓ پاسخ صحیح: a</p>
+                <section>
+                    <h2>Question 4</h2>
+                    <div class="question-container">
+                        <p class="small-text ltr">
+                            If a differential equation is multiplied by an integrating factor the result would be an ...
+                        </p>
+                        <div class="question-meaning">
+                            <p class="small-text rtl"><strong>معنی سوال:</strong> اگر یک معادله دیفرانسیل در یک عامل انتگرال‌گیر ضرب شود، نتیجه یک ... خواهد بود.</p>
+                        </div>
+                        
+                        <div class="correct-answer">
+                            <p class="small-text correct">✓ پاسخ صحیح: a) exact equation.</p>
+                        </div>
+                        <div class="options">
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="a">□ a) exact equation.</button>
+                                <div class="meaning">معادله دقیق</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="b">□ b) homogeneous equation.</button>
+                                <div class="meaning">معادله همگن</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="c">□ c) a differential equation of the lower degree.</button>
+                                <div class="meaning">معادله دیفرانسیل با درجه پایین‌تر</div>
+                            </div>
+                            <div class="option-wrapper">
+                                <button class="option" data-answer="d">□ d) a differential equation of the higher degree.</button>
+                                <div class="meaning">معادله دیفرانسیل با درجه بالاتر</div>
+                            </div>
+                        </div>
+                        
+                        <button class="nextButton" disabled>Next</button>
+                        
+
+                    </div>
+                </section>
             </section>
 
-            <!-- اسلاید سوال ۵ -->
-            <section>
-                <h2>Question 5</h2>
-                <p class="small-text ltr">
-                    A second order linear differential equation has constant coefficients if
-                </p>
-                <ol class="small-text ltr">
-                    <li class="fragment" data-fragment-index="1">□ a) it can be easily converted to a first order differential equation.</li>
-                    <li class="fragment" data-fragment-index="2">□ b) its characteristic equation has constant coefficients.</li>
-                    <li class="fragment" data-fragment-index="3">□ c) the coefficients of the unknown function and its derivatives are constants.</li>
-                    <li class="fragment" data-fragment-index="4">□ d) its solution is a polynomial.</li>
-                </ol>
-                <p class="fragment rtl" data-fragment-index="5">
-                    (معنی فارسی: یک معادله دیفرانسیل خطی مرتبه دوم دارای ضرایب ثابت است اگر)
-                </p>
-                <p class="fragment correct" data-fragment-index="6">✓ پاسخ صحیح: c</p>
-            </section>
+
+<!-- اسلاید سوال ۵ -->
+<section>
+    <section>
+        <h2>Question 5</h2>
+        <div class="question-container">
+            <p class="small-text ltr">
+                A second order linear differential equation has constant coefficients if
+            </p>
+            <div class="question-meaning">
+                <p class="small-text rtl"><strong>معنی سوال:</strong> یک معادله دیفرانسیل خطی مرتبه دوم دارای ضرایب ثابت است اگر</p>
+            </div>
+            
+            <div class="correct-answer">
+                <p class="small-text correct">✓ پاسخ صحیح: c) the coefficients of the unknown function and its derivatives are constants.</p>
+            </div>
+            <div class="options">
+                <div class="option-wrapper">
+                    <button class="option" data-answer="a">□ a) it can be easily converted to a first order differential equation.</button>
+                    <div class="meaning">بتوان آن را به راحتی به معادله دیفرانسیل مرتبه اول تبدیل کرد</div>
+                </div>
+                <div class="option-wrapper">
+                    <button class="option" data-answer="b">□ b) its characteristic equation has constant coefficients.</button>
+                    <div class="meaning">معادله مشخصه آن ضرایب ثابت داشته باشد</div>
+                </div>
+                <div class="option-wrapper">
+                    <button class="option" data-answer="c">□ c) the coefficients of the unknown function and its derivatives are constants.</button>
+                    <div class="meaning">ضرایب تابع مجهول و مشتقات آن ثابت باشند</div>
+                </div>
+                <div class="option-wrapper">
+                    <button class="option" data-answer="d">□ d) its solution is a polynomial.</button>
+                    <div class="meaning">جواب آن یک چندجمله‌ای باشد</div>
+                </div>
+            </div>
+            
+            <button class="nextButton" disabled>Next</button>
+            
+            <div class="question-meaning">
+                <p class="small-text rtl"><strong>معنی سوال:</strong> یک معادله دیفرانسیل خطی مرتبه دوم دارای ضرایب ثابت است اگر</p>
+            </div>
+            
+            <div class="correct-answer">
+                <p class="small-text correct">✓ پاسخ صحیح: c) the coefficients of the unknown function and its derivatives are constants.</p>
+            </div>
+        </div>
+    </section>
+</section>
 
 
- 
-            <section>
-                <h2>Question 6</h2>
-                <p class="small-text ltr">
-                    Translate the following text into Farsi:
-                </p>
-                <p class="small-text ltr">
-                    An expression of the form c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> + ... + c<sub>m</sub>y<sub>m</sub>, in which c<sub>1</sub>, c<sub>2</sub>, ..., c<sub>m</sub> are arbitrary constants, is called a linear combination of variables y<sub>1</sub>, y<sub>2</sub>, ..., y<sub>m</sub> because each term in the expression is linear, i.e., homogeneous of degree 1, in these m variables. One extremely important property of every homogeneous linear equation is that, if y<sub>1</sub> and y<sub>2</sub> are any particular solutions, then, for all values of the constants c<sub>1</sub> and c<sub>2</sub>, the linear combination c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> is also a solution.
-                </p>
-                <p class="fragment rtl small-text" data-fragment-index="1">
-                    (ترجمه فارسی: عبارت‌هایی به شکل c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> + ... + c<sub>m</sub>y<sub>m</sub> که در آن c<sub>1</sub>, c<sub>2</sub>, ..., c<sub>m</sub> ثابت‌های دلخواه هستند، ترکیب خطی متغیرهای y<sub>1</sub>, y<sub>2</sub>, ..., y<sub>m</sub> نامیده می‌شوند، زیرا هر جمله در این عبارت خطی است، یعنی همگن از درجه ۱ در این m متغیر. یکی از ویژگی‌های بسیار مهم هر معادله خطی همگن این است که اگر y<sub>1</sub> و y<sub>2</sub> هر دو جواب خاص باشند، آنگاه برای همه مقادیر ثابت‌های c<sub>1</sub> و c<sub>2</sub>، ترکیب خطی c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> نیز یک جواب است.)
-                </p>
-            </section>
+            
 
-           
+
+
+<!-- اسلاید سوال ۶ -->
+<section>
+    <section>
+        <div class="translation-container">
+            <h2>Question 6</h2>
+            <h3>Translate the following text into Farsi:</h3>
+            
+            <div class="english-text">
+                <p>An expression of the form c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> + ... + c<sub>m</sub>y<sub>m</sub>, 
+                in which c<sub>1</sub>, c<sub>2</sub>, ..., c<sub>m</sub> are <span class="term1">arbitrary constants</span>, 
+                is called a <span class="term2">linear combination</span> of variables y<sub>1</sub>, y<sub>2</sub>, ..., y<sub>m</sub> 
+                because each term in the expression is linear, i.e., <span class="term3">homogeneous of degree 1</span>, 
+                in these m variables. One extremely important property of every <span class="term4">homogeneous linear equation</span> 
+                is that, if y<sub>1</sub> and y<sub>2</sub> are any <span class="term5">particular solutions</span>, 
+                then, for all values of the constants c<sub>1</sub> and c<sub>2</sub>, 
+                the <span class="term6">linear combination</span> c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> 
+                is also a solution.</p>
+            </div>
+            
+            <div class="persian-translation">
+                <h3>ترجمه فارسی:</h3>
+                <p>عبارتی به شکل c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> + ... + c<sub>m</sub>y<sub>m</sub>، 
+                که در آن c<sub>1</sub>, c<sub>2</sub>, ..., c<sub>m</sub> <span class="term1">ثابت‌های دلخواه</span> باشند، 
+                یک <span class="term2">ترکیب خطی</span> از متغیرهای y<sub>1</sub>, y<sub>2</sub>, ..., y<sub>m</sub> نامیده می‌شود، 
+                زیرا هر جمله در این عبارت خطی است (یعنی <span class="term3">همگن از درجه ۱</span> در این m متغیر). 
+                یک ویژگی بسیار مهم هر <span class="term4">معادله خطی همگن</span> این است که اگر y<sub>1</sub> و y<sub>2</sub> 
+                <span class="term5">جواب‌های خاصی</span> باشند، آنگاه برای همه مقادیر ثابت‌های c<sub>1</sub> و c<sub>2</sub>، 
+                <span class="term6">ترکیب خطی</span> c<sub>1</sub>y<sub>1</sub> + c<sub>2</sub>y<sub>2</sub> 
+                نیز یک جواب خواهد بود.</p>
+            </div>
+        </div>
+    </section>
+</section>
 
 
         </div>
     </div>
 
-
-
-
-
-
-    <!-- راه‌اندازی Reveal.js -->
+    <!-- Reveal.js و اسکریپت‌های سفارشی -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
     <script>
+        // راه‌اندازی Reveal.js
         Reveal.initialize({
-            controls: true, // نمایش دکمه‌های کنترل
-            progress: true, // نمایش نوار پیشرفت
-            center: true, // مرکز کردن اسلایدها
-            hash: true, // فعال کردن پشتیبانی از hash در URL
-            transition: 'slide', // نوع انتقال بین اسلایدها
+            controls: true,
+            progress: true,
+            center: true,
+            hash: true,
+            transition: 'slide',
+            
+            // دکمه‌های ناوبری
+            controlsLayout: 'edges',
+            controlsBackArrows: 'visible'
         });
-    </script>
+        
+        // اسکریپت مدیریت سوالات
+        document.addEventListener('DOMContentLoaded', function() {
+            const allOptions = document.querySelectorAll('.option');
+            const allNextButtons = document.querySelectorAll('.nextButton');
+            const allQuestionMeanings = document.querySelectorAll('.question-meaning');
+            const allCorrectAnswers = document.querySelectorAll('.correct-answer');
+            
+            // پاسخ‌های صحیح
+            const correctAnswers = {
+                'question3': 'd',
+                'question4': 'a'
+            };
+            
+            // مدیریت هر سوال
+            allOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionContainer = this.closest('.question-container');
+                    const options = questionContainer.querySelectorAll('.option');
+                    const nextButton = questionContainer.querySelector('.nextButton');
+                    
+                    // حذف انتخاب‌های قبلی
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // انتخاب گزینه فعلی
+                    this.classList.add('selected');
+                    
+                    // فعال کردن دکمه Next
+                    nextButton.disabled = false;
+                });
+            });
+            
+            // مدیریت دکمه‌های Next
+            allNextButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionContainer = this.closest('.question-container');
+                    const selectedOption = questionContainer.querySelector('.option.selected');
+                    const questionMeaning = questionContainer.querySelector('.question-meaning');
+                    const correctAnswer = questionContainer.querySelector('.correct-answer');
+                    const options = questionContainer.querySelectorAll('.option');
+                    const meanings = questionContainer.querySelectorAll('.meaning');
+                    
+                    if (!selectedOption) return;
+                    
+                    // نمایش معانی و پاسخ صحیح
+                    meanings.forEach(meaning => meaning.style.display = 'block');
+                    questionMeaning.style.display = 'block';
+                    correctAnswer.style.display = 'block';
+                    
+                    // غیرفعال کردن دکمه Next
+                    this.disabled = true;
+                    
+                    // پیدا کردن پاسخ صحیح
+                    const questionId = questionContainer.closest('section').querySelector('h2').textContent.replace(' ', '');
+                    const correctAns = correctAnswers[questionId.toLowerCase()];
+                    
+                    // علامت‌گذاری پاسخ صحیح
+                    options.forEach(option => {
+                        if (option.getAttribute('data-answer') === correctAns) {
+                            option.classList.add('correct');
+                            option.innerHTML = '✓ ' + option.innerHTML.replace('□', '');
+                        }
+                    });
+                    
+                    // بررسی پاسخ کاربر
+                    if (selectedOption.getAttribute('data-answer') === correctAns) {
+                        // پاسخ صحیح
+                        selectedOption.classList.add('correct');
+                        selectedOption.innerHTML = '✓ ' + selectedOption.innerHTML.replace('□', '');
+                        createConfetti();
+                    } else {
+                        // پاسخ غلط
+                        selectedOption.classList.add('incorrect');
+                        selectedOption.innerHTML = '✗ ' + selectedOption.innerHTML.replace('□', '');
+                        questionContainer.classList.add('shake');
+                        
+                        setTimeout(() => {
+                            questionContainer.classList.remove('shake');
+                        }, 500);
+                    }
+                    
+                    // غیرفعال کردن همه گزینه‌ها
+                    options.forEach(option => {
+                        option.style.cursor = 'default';
+                        option.style.pointerEvents = 'none';
+                    });
+                });
+            });
+            
+            // تابع ایجاد کاغذ رنگی (confetti)
+            function createConfetti() {
+                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+                
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }
+            }
+        });
 
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.tf-checkbox');
+        const checkBtn = document.querySelector('.tf-check-btn');
+        const showTranslationBtn = document.querySelector('.tf-show-translation');
+        
+        // انتخاب گزینه
+        checkboxes.forEach(box => {
+            box.addEventListener('click', function() {
+                const statement = this.parentElement;
+                statement.classList.toggle('tf-selected');
+                this.textContent = statement.classList.contains('tf-selected') ? "▣" : "□";
+            });
+        });
+        
+        // بررسی پاسخ‌ها
+        checkBtn.addEventListener('click', function() {
+            checkboxes.forEach(box => {
+                const statement = box.parentElement;
+                const isTrue = statement.getAttribute('data-answer') === 'true';
+                const isSelected = statement.classList.contains('tf-selected');
+                
+                // غیرفعال کردن انتخاب بیشتر
+                box.style.pointerEvents = 'none';
+                
+                // بررسی پاسخ
+                if ((isTrue && isSelected) || (!isTrue && !isSelected)) {
+                    statement.classList.add('tf-correct');
+                    box.textContent = "✓";
+                    const feedback = statement.querySelector('.tf-feedback');
+                    feedback.textContent = "پاسخ صحیح";
+                    feedback.classList.add('tf-feedback-correct');
+                } else {
+                    statement.classList.add('tf-incorrect');
+                    box.textContent = "✗";
+                    const feedback = statement.querySelector('.tf-feedback');
+                    feedback.textContent = "پاسخ نادرست";
+                    feedback.classList.add('tf-feedback-incorrect');
+                }
+            });
+            
+            this.style.display = 'none';
+            showTranslationBtn.style.display = 'inline-block';
+        });
+        
+        // نمایش ترجمه فارسی
+        showTranslationBtn.addEventListener('click', function() {
+            document.querySelectorAll('.tf-persian').forEach(el => {
+                el.style.display = 'block';
+            });
+            this.style.display = 'none';
+        });
+    });
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const words = document.querySelectorAll('.word');
+        const blanks = document.querySelectorAll('.blank');
+        const hintBtn = document.querySelector('.hint-btn');
+        const checkBtn = document.querySelector('.check-btn');
+        const solutionBtn = document.querySelector('.solution-btn');
+        const hintArea = document.querySelector('.hint-area');
+        
+        let draggedWord = null;
+        
+        // Drag and Drop functionality
+        words.forEach(word => {
+            word.addEventListener('dragstart', function(e) {
+                draggedWord = this;
+                setTimeout(() => this.style.opacity = '0.4', 0);
+                e.dataTransfer.setData('text/plain', this.dataset.word);
+            });
+            
+            word.addEventListener('dragend', function() {
+                this.style.opacity = '1';
+            });
+        });
+        
+        blanks.forEach(blank => {
+            blank.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            blank.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (draggedWord) {
+                    this.textContent = draggedWord.dataset.word;
+                    this.classList.add('filled');
+                    draggedWord.style.visibility = 'hidden';
+                    draggedWord = null;
+                }
+            });
+            
+            // Click to fill functionality
+            blank.addEventListener('click', function() {
+                if (this.textContent.trim() === '') {
+                    const availableWords = Array.from(words).filter(w => 
+                        w.style.visibility !== 'hidden' && 
+                        !Array.from(blanks).some(b => b.textContent === w.dataset.word)
+                    );
+                    
+                    if (availableWords.length > 0) {
+                        const word = availableWords[0];
+                        this.textContent = word.dataset.word;
+                        this.classList.add('filled');
+                        word.style.visibility = 'hidden';
+                    }
+                } else {
+                    const word = Array.from(words).find(w => 
+                        w.dataset.word === this.textContent
+                    );
+                    if (word) word.style.visibility = 'visible';
+                    this.textContent = '';
+                    this.classList.remove('filled');
+                }
+            });
+        });
+        
+        // Check answers
+        checkBtn.addEventListener('click', function() {
+            let allCorrect = true;
+            
+            blanks.forEach(blank => {
+                if (blank.textContent === blank.dataset.answer) {
+                    blank.classList.add('filled');
+                    blank.classList.remove('incorrect');
+                } else {
+                    blank.classList.add('incorrect');
+                    allCorrect = false;
+                }
+            });
+            
+            if (allCorrect) {
+                alert('تبریک! همه پاسخ‌ها صحیح هستند!');
+            } else {
+                solutionBtn.style.display = 'inline-flex';
+                hintArea.style.display = 'block';
+            }
+        });
+        
+        // Show solution
+        solutionBtn.addEventListener('click', function() {
+            blanks.forEach(blank => {
+                blank.textContent = blank.dataset.answer;
+                blank.classList.add('filled');
+                blank.classList.remove('incorrect');
+            });
+            this.style.display = 'none';
+        });
+        
+        // Show hint
+        hintBtn.addEventListener('click', function() {
+            hintArea.style.display = hintArea.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+  
+
+
+    // دکمه نمایش ترجمه
+const translateBtn = document.querySelector('.translate-btn');
+const translationArea = document.querySelector('.translation-area');
+
+// دیکشنری ترجمه‌ها
+const translations = {
+    particular: 'جزئی',
+    solution: 'کلی',
+    set: 'غیرتهی',
+    parameter: 'پارامتر',
+    relative: 'نسبی'
+};
+
+// عملکرد دکمه نمایش ترجمه
+translateBtn.addEventListener('click', function () {
+    // نمایش/مخفی کردن بخش ترجمه
+    translationArea.style.display = translationArea.style.display === 'block' ? 'none' : 'block';
+
+    // هایلایت کردن کلمات پر شده در ترجمه
+    blanks.forEach(blank => {
+        const word = blank.textContent.trim();
+        if (word && translations[word]) {
+            const translatedElements = document.querySelectorAll(`.translated[data-word="${word}"]`);
+            translatedElements.forEach(el => el.classList.add('highlight'));
+        }
+    });
+});
+    </script>
 </body>
 </html>

@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Differential Equations Quiz</title>
     
-
-    <!-- افزودن Reveal.js از طریق CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css" id="theme">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-
     <!-- استایل‌های سفارشی -->
+     
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        .reveal section {
-            overflow-y: auto;
-            max-height: 90vh; /* تنظیم ارتفاع حداکثری برای اسلاید */
-        }
+
+
+
         /* استایل‌های سفارشی */
         .question-container {
             background: rgba(255, 255, 255, 0.1);
@@ -293,8 +291,10 @@
 
 
 
-  
-       .fill-blank-final {
+    /* ۱ */
+
+
+    .fill-blank-final {
         background: rgba(0,0,0,0.8);
         padding: 25px;
         border-radius: 15px;
@@ -302,7 +302,6 @@
         margin: 0 auto;
     }
     
-    /* استایل جعبه کلمات */
     .word-bank {
         display: flex;
         flex-wrap: wrap;
@@ -316,26 +315,32 @@
         color: white;
         padding: 10px 20px;
         border-radius: 25px;
-        cursor: grab;
+        cursor: pointer;
         user-select: none;
         box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         transition: all 0.3s;
         font-size: 0.95em;
     }
     
-    .word:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    .word.selected {
+        background: linear-gradient(135deg, #ffeb3b, #fbc02d);
+        color: #000;
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
     
-    /* استایل متن تمرین */
+    .word.used {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
     .passage {
         background: rgba(255,255,255,0.1);
         padding: 25px;
         border-radius: 10px;
         line-height: 2;
         margin-bottom: 30px;
-        font-size: 0.95em;
+        font-size: 0.5em;
     }
     
     .blank {
@@ -356,14 +361,16 @@
     
     .blank.filled {
         border-bottom: 2px solid #81c784;
+        color: #81c784;
     }
     
     .blank.incorrect {
         border-bottom: 2px solid #e57373;
+        color: #e57373;
     }
     
     /* استایل دکمه‌ها */
-    .hint-btn, .check-btn, .solution-btn {
+    .hint-btn, .check-btn, .solution-btn, .translate-btn {
         background: linear-gradient(135deg, #1565c0, #0d47a1);
         color: white;
         border: none;
@@ -376,7 +383,7 @@
         gap: 10px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         transition: all 0.3s;
-        margin: 0 10px 15px 0;
+        margin: 0 10px 10px 0;
     }
     
     .check-btn {
@@ -387,8 +394,12 @@
         background: linear-gradient(135deg, #ff8f00, #e65100);
     }
     
-    .hint-btn:hover, .check-btn:hover, .solution-btn:hover   {
-        transform: translateY(-5px);
+    .translate-btn {
+        background: linear-gradient(135deg, #7b1fa2, #4a148c);
+    }
+    
+    .hint-btn:hover, .check-btn:hover, .solution-btn:hover, .translate-btn:hover {
+        transform: translateY(-3px);
         box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     }
     
@@ -396,71 +407,47 @@
         font-size: 1.2em;
     }
     
-    /* استایل راهنما */
-    .hint-area {
-        background: rgba(255,235,59,0.15);
+    .hint-area, .translation-area {
+        background: rgba(255,255,255,0.1);
         padding: 20px;
         border-radius: 10px;
         margin-top: 25px;
         border-right: 3px solid #ffeb3b;
         text-align: right;
         direction: rtl;
+    font-size: .5em;
+
     }
     
-    .hint-area h4 {
+    .translation-area {
+        border-color: #7b1fa2;
+    }
+    
+    .translated-word {
         color: #ffeb3b;
-        margin-bottom: 10px;
+        font-weight: bold;
+        padding: 2px 5px;
+        border-radius: 3px;
+        transition: all 0.3s;
+    }
+    
+    .translated-word.highlighted {
+        background-color: #81c784;
+        color: #000;
+    }
+    
+    .translated-word.incorrect {
+        background-color: #e57373;
+        color: #000;
     }
 
 
+/* ۱ */
 
 
 
-    /* استایل بخش ترجمه */
-.translation-area {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 0.9em;
-    line-height: 1.8;
-    color: #fff;
-}
-
-.translated {
-    font-weight: bold;
-    color: #ffeb3b;
-    transition: all 0.3s ease;
-}
-
-.translated.highlight {
-    background: #ffeb3b;
-    color: #000;
-    padding: 2px 5px;
-    border-radius: 5px;
-}
 
 
-/* استایل دکمه نمایش ترجمه */
-.translate-btn {
-    background: linear-gradient(135deg, #4fc3f7, #2196F3);
-    color: white;
-    border: none;
-    padding: 12px 25px; /* بزرگ‌تر کردن فضای داخلی */
-    font-size: 1em;
-    cursor: pointer;
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s;
-    margin: 0 10px 15px 0;
-}
-
-.translate-btn:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    }
 
 
 
@@ -476,7 +463,32 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
-    </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        .reveal .slides section {
+    overflow-y: auto ;
+    overflow-x: auto ;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+
+
+</style>
+
+
 </head>
 <body>
     <div class="reveal">
@@ -492,70 +504,73 @@
                 <p class="exercise-title">Exercise: Lesson Six</p>
             </section>
             
-            
-<!-- اسلاید تمرین ۱ (نسخه نهایی با دکمه‌های واضح) -->
-<section>
-    <section>
-        <div class="fill-blank-final">
-            <h2>تمرین ۱: جای خالی را پر کنید</h2>
-            <h3>معادلات دیفرانسیل</h3>
-            
-            <div class="word-bank">
-                <div class="word" draggable="true" data-word="particular">particular</div>
-                <div class="word" draggable="true" data-word="solution">solution</div>
-                <div class="word" draggable="true" data-word="set">set</div>
-                <div class="word" draggable="true" data-word="parameter">parameter</div>
-                <div class="word" draggable="true" data-word="relative">relative</div>
-            </div>
-            
-            <div class="passage">
-                <p>Each individual solution of a differential equation is called a 
-                particular solution.</p>
-                
-                <p>A general <span class="blank" data-answer="solution">______</span> 
-                of an ordinary differential equation is a nonempty 
-                <span class="blank" data-answer="set">______</span> 
-                of solutions specified by an expression which contains at least one 
-                <span class="blank" data-answer="parameter">______</span> 
-                and which becomes a representation of a 
-                <span class="blank" data-answer="particular">______</span> 
-                solution when its parameters are all replaced by numbers.</p>
-                
-                <p>A solution is said to be 
-                <span class="blank" data-answer="relative">______</span> 
-                to any given general solution if it does not belong to that solution set.</p>
-            </div>
-            
-            <!-- دکمه‌های خارج از div.controls -->
-            <button class="hint-btn">
-                <i class="icon">💡</i> نمایش راهنما
-            </button>
-            <button class="check-btn">
-                <i class="icon">✓</i> بررسی پاسخ‌ها
-            </button>
-            <button class="solution-btn" style="display:none">
-                <i class="icon">👁️</i> نمایش جواب
-            </button>
-            <button class="translate-btn">
-                <i class="icon">🌐</i> نمایش ترجمه
-            </button>
-            
-            <div class="hint-area" style="display:none">
-                <h4>راهنمایی:</h4>
-                <p>کلمات را می‌توانید با کشیدن و رها کردن در جای خالی قرار دهید</p>
-                <p>همچنین می‌توانید روی جای خالی کلیک کنید تا اولین کلمه مناسب قرار داده شود</p>
-            </div>
 
-            <!-- بخش ترجمه -->
-            <div class="translation-area" style="display:none; margin-top: 20px;">
-                <h4>ترجمه:</h4>
-                <p>هر جواب خاص یک معادله دیفرانسیل، <span class="translated" data-word="particular">جزئی</span> نامیده می‌شود.</p>
-                <p>یک جواب <span class="translated" data-word="solution">کلی</span> یک معادله دیفرانسیل معمولی، یک مجموعه <span class="translated" data-word="set">غیرتهی</span> از جواب‌هاست که توسط یک عبارت مشخص می‌شود و حداقل شامل یک <span class="translated" data-word="parameter">پارامتر</span> است و وقتی پارامترهای آن با اعداد جایگزین شوند، نماینده‌ای از یک جواب <span class="translated" data-word="particular">جزئی</span> خواهد بود.</p>
-                <p>یک جواب به یک جواب کلی داده شده <span class="translated" data-word="relative">نسبی</span> گفته می‌شود اگر به آن مجموعه جواب تعلق نداشته باشد.</p>
-            </div>
-        </div>
-    </section>
-</section>
+
+
+            <section>
+                <section>
+                    <div class="fill-blank-final">
+                        <h2>تمرین ۱: جای خالی را پر کنید</h2>
+                        <h3>معادلات دیفرانسیل</h3>
+                        
+                        <div class="word-bank">
+                            <div class="word" data-word="particular">particular</div>
+                            <div class="word" data-word="solution">solution</div>
+                            <div class="word" data-word="set">set</div>
+                            <div class="word" data-word="parameter">parameter</div>
+                            <div class="word" data-word="relative">relative</div>
+                        </div>
+                        
+                        <div class="passage">
+                            Each individual solution of a differential equation is called a particular solution.
+                        <br> A general <span class="blank" data-answer="solution">______</span> 
+                            of an ordinary differential equation is a nonempty 
+                            <span class="blank" data-answer="set">______</span> 
+                            of solutions specified by an expression which contains at least one 
+                            <span class="blank" data-answer="parameter">______</span> 
+                            and which becomes a representation of a 
+                            <span class="blank" data-answer="particular">______</span> 
+                            solution when its parameters are all replaced by numbers.
+                            
+                            A solution is said to be 
+                            <span class="blank" data-answer="relative">______</span> 
+                            to any given general solution if it does not belong to that solution set.
+                        </div>
+                                    
+                        <div class="translation-area" style="display:none; margin-top: 20px;">
+                            <h4>ترجمه فارسی:</h4>
+                            <div class="persian-text">
+                                <p>هر جواب منفرد یک معادله دیفرانسیل را یک جواب <span class="translated-word" data-en="particular">خاص</span> می‌نامند.</p>
+                                <p>یک جواب <span class="translated-word" data-en="solution">عمومی</span> برای معادله دیفرانسیل معمولی، یک <span class="translated-word" data-en="set">مجموعه</span> ناتهی از جواب‌هاست که با عبارتی حاوی حداقل یک <span class="translated-word" data-en="parameter">پارامتر</span> مشخص می‌شود و وقتی همه پارامترهای آن با اعداد جایگزین شوند، نمایشی از یک جواب <span class="translated-word" data-en="particular">خاص</span> خواهد بود.</p>
+                                <p>یک جواب نسبت به یک جواب عمومی داده شده <span class="translated-word" data-en="relative">نسبی</span> نامیده می‌شود اگر به آن مجموعه جواب تعلق نداشته باشد.</p>
+                            </div>
+                        </div>
+                        <!-- دکمه‌ها -->
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button class="hint-btn">
+                                <i class="icon">💡</i> نمایش راهنما
+                            </button>
+                            <button class="check-btn">
+                                <i class="icon">✓</i> بررسی پاسخ‌ها
+                            </button>
+                            <button class="solution-btn" style="display:none">
+                                <i class="icon">👁️</i> نمایش جواب
+                            </button>
+                            <button class="translate-btn">
+                                <i class="icon">🌐</i> نمایش ترجمه
+                            </button>
+                        </div>
+                        
+                        <div class="hint-area" style="display:none">
+                            <h4>راهنمایی:</h4>
+                            <p>1. روی کلمه کلیک کنید تا انتخاب شود (زرد رنگ می‌شود)</p>
+                            <p>2. روی جای خالی کلیک کنید تا کلمه قرار بگیرد</p>
+                            <p>3. برای حذف کلمه، روی جای خالی پر شده دوباره کلیک کنید</p>
+                        </div>
+
+                    </div>
+                </section>
+            </section>
 <!-- اسلاید تمرین ۲ -->
 
 <!-- اسلاید تمرین ۲ (نسخه نهایی با نمایش تأخیری ترجمه) -->
@@ -789,9 +804,8 @@
     </div>
 
     <!-- Reveal.js و اسکریپت‌های سفارشی -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+
     <script>
-        // راه‌اندازی Reveal.js
         Reveal.initialize({
             controls: true,
             progress: true,
@@ -801,9 +815,32 @@
             
             // دکمه‌های ناوبری
             controlsLayout: 'edges',
-            controlsBackArrows: 'visible'
+            controlsBackArrows: 'visible',
+
         });
+
+
+
+
+
+
+
+
+
+
         
+
+
+
+
+
+
+
+
+
+
+
+
         // اسکریپت مدیریت سوالات
         document.addEventListener('DOMContentLoaded', function() {
             const allOptions = document.querySelectorAll('.option');
@@ -974,70 +1011,92 @@
 
 
 
+
+
+
+
+
+
+
+
+
     document.addEventListener('DOMContentLoaded', function() {
         const words = document.querySelectorAll('.word');
         const blanks = document.querySelectorAll('.blank');
         const hintBtn = document.querySelector('.hint-btn');
         const checkBtn = document.querySelector('.check-btn');
         const solutionBtn = document.querySelector('.solution-btn');
+        const translateBtn = document.querySelector('.translate-btn');
         const hintArea = document.querySelector('.hint-area');
+        const translationArea = document.querySelector('.translation-area');
+        const translatedWords = document.querySelectorAll('.translated-word');
         
-        let draggedWord = null;
+        let selectedWord = null;
         
-        // Drag and Drop functionality
+        // انتخاب کلمه
         words.forEach(word => {
-            word.addEventListener('dragstart', function(e) {
-                draggedWord = this;
-                setTimeout(() => this.style.opacity = '0.4', 0);
-                e.dataTransfer.setData('text/plain', this.dataset.word);
-            });
-            
-            word.addEventListener('dragend', function() {
-                this.style.opacity = '1';
-            });
-        });
-        
-        blanks.forEach(blank => {
-            blank.addEventListener('dragover', function(e) {
-                e.preventDefault();
-            });
-            
-            blank.addEventListener('drop', function(e) {
-                e.preventDefault();
-                if (draggedWord) {
-                    this.textContent = draggedWord.dataset.word;
-                    this.classList.add('filled');
-                    draggedWord.style.visibility = 'hidden';
-                    draggedWord = null;
+            word.addEventListener('click', function() {
+                // برداشتن انتخاب قبلی
+                if (selectedWord) {
+                    selectedWord.classList.remove('selected');
                 }
-            });
-            
-            // Click to fill functionality
-            blank.addEventListener('click', function() {
-                if (this.textContent.trim() === '') {
-                    const availableWords = Array.from(words).filter(w => 
-                        w.style.visibility !== 'hidden' && 
-                        !Array.from(blanks).some(b => b.textContent === w.dataset.word)
-                    );
-                    
-                    if (availableWords.length > 0) {
-                        const word = availableWords[0];
-                        this.textContent = word.dataset.word;
-                        this.classList.add('filled');
-                        word.style.visibility = 'hidden';
-                    }
+                
+                // انتخاب جدید
+                if (selectedWord !== this) {
+                    selectedWord = this;
+                    this.classList.add('selected');
                 } else {
-                    const word = Array.from(words).find(w => 
-                        w.dataset.word === this.textContent
-                    );
-                    if (word) word.style.visibility = 'visible';
-                    this.textContent = '';
-                    this.classList.remove('filled');
+                    selectedWord = null;
                 }
             });
         });
         
-        // Check answers
+        // قرار دادن یا حذف کلمه در جای خالی
+        blanks.forEach(blank => {
+            blank.addEventListener('click', function() {
+                // اگر جای خالی پر شده باشد و کلمه‌ای انتخاب نشده باشد
+                if (this.textContent.trim() !== '' && !selectedWord) {
+                    // پیدا کردن کلمه مربوطه و فعال کردن مجدد آن
+                    const wordText = this.textContent;
+                    document.querySelectorAll('.word').forEach(word => {
+                        if (word.dataset.word === wordText) {
+                            word.classList.remove('used');
+                        }
+                    });
+                    
+                    // حذف کلمه از جای خالی
+                    this.textContent = '';
+                    this.classList.remove('filled', 'incorrect');
+                    this.removeAttribute('data-word');
+                    return;
+                }
+                
+                // اگر کلمه‌ای انتخاب شده باشد
+                if (selectedWord) {
+                    // حذف کلمه قبلی اگر وجود داشت
+                    const previousWord = this.dataset.word;
+                    if (previousWord) {
+                        document.querySelectorAll('.word').forEach(w => {
+                            if (w.dataset.word === previousWord) {
+                                w.classList.remove('used');
+                            }
+                        });
+                    }
+                    
+                    // قرار دادن کلمه جدید
+                    this.textContent = selectedWord.dataset.word;
+                    this.dataset.word = selectedWord.dataset.word;
+                    this.classList.add('filled');
+                    
+                    // علامت گذاری کلمه استفاده شده
+                    selectedWord.classList.add('used');
+                    selectedWord.classList.remove('selected');
+                    selectedWord = null;
+                }
+            });
+        });
+        
+        // بررسی پاسخ‌ها
         checkBtn.addEventListener('click', function() {
             let allCorrect = true;
             
@@ -1059,51 +1118,62 @@
             }
         });
         
-        // Show solution
+        // نمایش جواب صحیح
         solutionBtn.addEventListener('click', function() {
             blanks.forEach(blank => {
                 blank.textContent = blank.dataset.answer;
+                blank.dataset.word = blank.dataset.answer;
                 blank.classList.add('filled');
                 blank.classList.remove('incorrect');
+                
+                // علامت گذاری کلمات استفاده شده
+                document.querySelectorAll('.word').forEach(w => {
+                    if (w.dataset.word === blank.dataset.answer) {
+                        w.classList.add('used');
+                    }
+                });
             });
             this.style.display = 'none';
         });
         
-        // Show hint
+        // نمایش/مخفی کردن راهنما
         hintBtn.addEventListener('click', function() {
             hintArea.style.display = hintArea.style.display === 'block' ? 'none' : 'block';
         });
+        
+        // نمایش ترجمه و هایلایت کلمات
+        translateBtn.addEventListener('click', function() {
+            // نمایش/مخفی کردن ترجمه
+            translationArea.style.display = translationArea.style.display === 'block' ? 'none' : 'block';
+            
+            if (translationArea.style.display === 'block') {
+                // هایلایت کلمات ترجمه شده متناسب با جای خالی‌های پر شده
+                translatedWords.forEach(tw => {
+                    const englishWord = tw.dataset.en;
+                    const blank = Array.from(blanks).find(b => b.dataset.word === englishWord);
+                    
+                    if (blank) {
+                        tw.classList.add('highlighted');
+                        if (blank.classList.contains('incorrect')) {
+                            tw.classList.add('incorrect');
+                        } else {
+                            tw.classList.remove('incorrect');
+                        }
+                    } else {
+                        tw.classList.remove('highlighted', 'incorrect');
+                    }
+                });
+            }
+        });
     });
-  
 
 
-    // دکمه نمایش ترجمه
-const translateBtn = document.querySelector('.translate-btn');
-const translationArea = document.querySelector('.translation-area');
+</script>
 
-// دیکشنری ترجمه‌ها
-const translations = {
-    particular: 'جزئی',
-    solution: 'کلی',
-    set: 'غیرتهی',
-    parameter: 'پارامتر',
-    relative: 'نسبی'
-};
 
-// عملکرد دکمه نمایش ترجمه
-translateBtn.addEventListener('click', function () {
-    // نمایش/مخفی کردن بخش ترجمه
-    translationArea.style.display = translationArea.style.display === 'block' ? 'none' : 'block';
 
-    // هایلایت کردن کلمات پر شده در ترجمه
-    blanks.forEach(blank => {
-        const word = blank.textContent.trim();
-        if (word && translations[word]) {
-            const translatedElements = document.querySelectorAll(`.translated[data-word="${word}"]`);
-            translatedElements.forEach(el => el.classList.add('highlight'));
-        }
-    });
-});
+
+
     </script>
 </body>
 </html>

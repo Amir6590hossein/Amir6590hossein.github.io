@@ -19,7 +19,7 @@
         .question-container {
             background: rgba(255, 255, 255, 0.1);
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 10px;S
             margin-top: 20px;
         }
         
@@ -601,7 +601,7 @@
                 </div>
                 
                 <!-- مورد سوم -->
-                <div class="tf-statement" data-answer="true">
+                <div class="tf-statement" data-answer="false">
                     <span class="tf-checkbox">□</span>
                     <div class="tf-content">
                         <p class="tf-english">Three methods are discussed in lesson 6 for particular solutions of second-order equations.</p>
@@ -748,13 +748,9 @@
             
             <button class="nextButton" disabled>Next</button>
             
-            <div class="question-meaning">
-                <p class="small-text rtl"><strong>معنی سوال:</strong> یک معادله دیفرانسیل خطی مرتبه دوم دارای ضرایب ثابت است اگر</p>
-            </div>
+
             
-            <div class="correct-answer">
-                <p class="small-text correct">✓ پاسخ صحیح: c) the coefficients of the unknown function and its derivatives are constants.</p>
-            </div>
+
         </div>
     </section>
 </section>
@@ -850,7 +846,8 @@
             // پاسخ‌های صحیح
             const correctAnswers = {
                 'question3': 'd',
-                'question4': 'a'
+                'question4': 'a',
+                'question5': 'c'
             };
             
             // مدیریت هر سوال
@@ -975,14 +972,15 @@
                 
                 // غیرفعال کردن انتخاب بیشتر
                 box.style.pointerEvents = 'none';
-                
+                // || (!isTrue && !isSelected)
                 // بررسی پاسخ
-                if ((isTrue && isSelected) || (!isTrue && !isSelected)) {
+                if ((isTrue && isSelected)||(isTrue) ) {
                     statement.classList.add('tf-correct');
                     box.textContent = "✓";
                     const feedback = statement.querySelector('.tf-feedback');
                     feedback.textContent = "پاسخ صحیح";
                     feedback.classList.add('tf-feedback-correct');
+
                 } else {
                     statement.classList.add('tf-incorrect');
                     box.textContent = "✗";
@@ -1110,7 +1108,7 @@
             });
             
             if (allCorrect) {
-                alert('تبریک! همه پاسخ‌ها صحیح هستند!');
+                alert('Congratulations! All answers are correct!');
             } else {
                 solutionBtn.style.display = 'inline-flex';
                 hintArea.style.display = 'block';

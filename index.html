@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>ارائه TransAttUnet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/dracula.min.css"> <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap');
+        
+        :root { --r-main-font: 'Vazirmatn', sans-serif; }
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 { font-family: 'Vazirmatn', sans-serif; }
+        .reveal p, .reveal li, .reveal span { font-family: 'Vazirmatn', sans-serif; }
+        
+        .two-col { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .col { flex: 1; }
+        .image-placeholder {
+            background-color: #2b2b2b;
+            border: 2px dashed #666;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            margin: 20px auto;
+            border-radius: 10px;
+        }
+        .highlight { color: #50fa7b; font-weight: bold; }
+        .small-text { font-size: 0.6em; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section>
+                <h2>TransAttUnet</h2>
+                <h4>سگمنتیشن تصاویر پزشکی با هدایت توجه چند-سطحی و ترنسفورمر</h4>
+                <div style="margin-top: 50px; font-size: 0.8em; color: #ff79c6;">
+                    <p>ارائه دهندگان:</p>
+                    <p><strong>امیر حسین امجدیان</strong></p>
+                    <p><strong>مهدی شکری</strong></p>
+                </div>
+            </section>
+
+            <section>
+                <h3>مقدمه و بیان مسئله</h3>
+                <ul style="font-size: 0.7em; line-height: 2;">
+                    <li class="fragment"><b>اهمیت موضوع:</b> قطعه‌بندی (Segmentation) دقیق ضایعات در تصاویر پزشکی (مانند CT و MRI) برای تشخیص بیماری حیاتی است.</li>
+                    <li class="fragment"><b>محدودیت مدل‌های فعلی (U-Net):</b>
+                        <ul>
+                            <li>عملیات کانولوشن فقط روی همسایگی محلی تمرکز دارد (Local Focus).</li>
+                            <li>عدم توانایی در مدل‌سازی وابستگی‌های طولانی‌برد (Long-range dependencies).</li>
+                            <li>از دست رفتن جزئیات ریز در حین فرآیندهای نمونه‌برداری (Downsampling).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>سگمنتیشن معنایی (Semantic Segmentation)</h3>
+                <p class="small-text" style="margin-bottom: 20px;">هدف: دسته‌بندی تک‌تک پیکسل‌های تصویر برای تشخیص دقیق نواحی.</p>
+                
+                <div class="two-col" style="align-items: center;">
+                    <div class="col" style="flex: 0.8; font-size: 0.5em; line-height: 2;">
+                        <ul>
+                            <li class="fragment"><b>تعریف:</b> جداسازی اشیاء مورد نظر (مانند ضایعات یا اندام‌ها) از پس‌زمینه پیچیده در تصاویر پزشکی.</li>
+                            <li class="fragment"><b>کاربرد:</b> تشخیص کمی بیماری‌ها و تحلیل ریخت‌شناسی (Morphology) اندام‌ها.</li>
+                            <li class="fragment"><b>چالش:</b> مرزها و بافت‌های پیچیده نیاز به دقت بسیار بالا دارد که با روش‌های دستی زمان‌بر است.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col" style="flex: 1.5;">
+                        <div style="text-align: center;">
+                            <img src="figure1.png" 
+                                 alt="Medical Image Segmentation Examples" 
+                                 style="max-height: 60vh; width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                            <p style="font-size: 0.3em; margin-top: 10px; color: #aaa;">نمونه‌های سگمنتیشن: ضایعات پوستی، ریه، و سلول‌ها </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>معماری پایه U-Net</h3>
+                <p class="small-text">استاندارد طلایی فعلی در سگمنتیشن تصاویر پزشکی.</p>
+                
+                <div class="two-col" style="align-items: center;">
+                    <div class="col" style="flex: 1; font-size: 0.5em; line-height: 1.8;">
+                        <ul>
+                        <li class="fragment"><b>ساختار U شکل:</b> شامل دو بخش مسیر انقباضی (Encoder) برای استخراج ویژگی و مسیر انبساطی (Decoder) برای بازیابی مکانی است.</li>
+                            <li class="fragment highlight-blue"><b>اتصالات پرش (Skip Connections):</b> ویژگی‌های سطح پایین را مستقیماً به دیکودر منتقل می‌کنند تا جزئیات دقیق حفظ شود.</li>
+                            <li class="fragment" style="color: #ff5555;"><b>محدودیت:</b> به دلیل استفاده از CNN، تمرکز محلی دارد و نمی‌تواند وابستگی‌های طولانی‌برد (Global Context) را خوب مدل‌سازی کند.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col" style="flex: 1.2;">
+                        <img src="placeholder3.jpg" 
+                             alt="Standard U-Net Structure" 
+                             style="max-height: 55vh; width: 100%; object-fit: contain; border-radius: 10px; background: white; padding: 10px;">
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>معماری کلی TransAttUnet</h3>
+                <div class="small-text">
+                   <p>ترکیبی از <span class="highlight">U-Net استاندارد</span> + <span class="highlight">ماژول توجه خودآگاه (SAA)</span> + <span class="highlight">اتصالات پرش چندمقیاسی</span> </p>
+                </div>
+                
+                <div style="width: 100%; display: flex; justify-content: center; margin-top: 20px;">
+                    <img src="image_a23b72.png" 
+                         alt="TransAttUnet Architecture" 
+                         style="max-height: 65vh; width: auto; max-width: 95%; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.5);"> 
+                </div>
+            </section>
+
+            <section>
+                <h3> ماژول توجه خودآگاه (SAA)</h3>
+                <p style="font-size: 0.6em; margin-bottom: 10px;">پل ارتباطی بین انکودر و دیکودر شامل دو بخش:</p>
+                
+                <div class="two-col" style="align-items: center;">
+                    <div class="col" style="font-size: 0.5em; flex: 0.8;">
+                        <ol style="padding-right: 20px;">
+                            <li><b>TSA :</b> استخراج روابط معنایی سراسری با ترنسفورمر.</li>
+                            <br>
+                            <li><b>GSA :</b> رمزگذاری اطلاعات مکانی سراسری در ویژگی‌های محلی.</li>
+                        </ol>
+                        
+                        <p class="fragment" dir="ltr" style="font-size: 0.9em; border: 1px solid #666; padding: 5px; margin-top: 20px; text-align: center; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            $$F_{SAA} = \lambda_1 F_{tsa} + \lambda_2 F_{gsa} + F_{en}$$
+                        </p>
+                    </div>
+
+                    <div class="col" style="flex: 1.5;">
+                         <div style="width: 100%; display: flex; justify-content: center; flex-direction: column; align-items: center;">
+                             <img src="image_a23b72.png" 
+                                  style="max-height: 65vh; width: 100%; object-fit: contain; border-radius: 10px;" 
+                                  alt="SAA Module Detail">
+                             <p style="font-size: 0.35em; margin-top: 5px; color: #aaa;">* دیاگرام کلی مدل (به بخش‌های میانی دقت کنید)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+                
+                <section>
+                    <h2>تحلیل ماژول Self-aware Attention (SAA)</h2>
+                    <p style="font-size: 0.9em; color: #ff79c6; margin-bottom: 40px;">
+                        ترکیب مکانیزم‌های توجه برای استخراج ویژگی‌های سراسری و محلی
+                    </p>
+
+                    <div class="two-col" style="align-items: flex-start;">
+                        
+                        <div class="col" style="flex: 1; border-left: 1px solid #6272a4; padding-left: 20px;">
+                            <h4 style="color: #8be9fd; font-size: 0.8em;">1. Transformer Self-Attention (TSA)</h4>
+                            <p style="font-size: 0.5em; text-align: justify;">
+                                این بخش وظیفه مدل‌سازی وابستگی‌های طولانی‌برد (Long-range dependencies) بین پیکسل‌ها را بر عهده دارد. برخلاف CNN که دید محلی دارد، TSA دید سراسری ایجاد می‌کند.
+                            </p>
+                            
+                            <div style="background: rgba(139, 233, 253, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                                <p style="font-size: 0.55em; direction: ltr; font-family: 'Times New Roman', serif;">
+                                    $$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+                                </p>
+                                <hr style="border-color: #6272a4; opacity: 0.3;">
+                                <p style="font-size: 0.45em; direction: ltr; margin-top: 5px;">
+                                    Where: <br>
+                                    $Q = X W^Q, \quad K = X W^K, \quad V = X W^V$
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col" style="flex: 1; padding-right: 20px;">
+                            <h4 style="color: #50fa7b; font-size: 0.8em;">2. Global Spatial Attention (GSA)</h4>
+                            <p style="font-size: 0.5em; text-align: justify;">
+                                این ماژول موقعیت‌های فضایی پیکسل‌ها را در نظر می‌گیرد تا اطلاعات مکانی (Spatial) که ممکن است در لایه‌های ترنسفورمر از دست برود، بازیابی شود.
+                            </p>
+
+                            <div style="background: rgba(80, 250, 123, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                                <p style="font-size: 0.55em; direction: ltr; font-family: 'Times New Roman', serif;">
+                                    $$ \text{GSA}(X) = X + \alpha \cdot \text{SpatialMap}(X) $$
+                                </p>
+                                <p style="font-size: 0.45em; margin-top: 10px; color: #f8f8f2;">
+                                    نحوه عملکرد:
+                                </p>
+                                <ul style="font-size: 0.4em; direction: ltr; text-align: left;">
+                                    <li>$\alpha$: Learnable scaling parameter</li>
+                                    <li>Focuses on informative regions (ROI)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <span style="font-size: 0.6em; background: #44475a; padding: 5px 15px; border-radius: 20px;">
+                            SAA Output = TSA(Features) + GSA(Features)
+                        </span>
+                    </div>
+                </section>
+
+            <section>
+                <h3>اتصالات پرش چند-مقیاسی</h3>
+                <p class="small-text" style="margin-bottom: 5px;">مقایسه انواع اتصالات انکودر به دیکودر:</p>
+                
+                <div class="two-col" style="align-items: center; justify-content: space-between;">
+                    
+                    <div class="col" style="flex: 0.8; font-size: 0.45em; padding-left: 10px;">
+                        <ul style="margin: 0; padding-right: 20px;">
+                            <li style="margin-bottom: 10px;"><b>(a) آبشاری:</b><br> اتصال ساده همه مقیاس‌ها.</li>
+                            <li class="highlight" style="margin-bottom: 10px;"><b>(b) باقی‌مانده:</b><br> ترکیب ورودی و خروجی هر بلوک.</li>
+                            <li class="highlight"><b>(c) متراکم:</b><br> اتصال خروجی به تمام بلوک‌های بعدی.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col" style="flex: 2.5;">
+                        <img src="image_a23c43.png" 
+                             alt="Skip Connections" 
+                             style="width: 100%; max-height: 65vh; object-fit: contain; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>مجموعه داده‌های آزمایش شده (Datasets)</h3>
+                <p class="small-text">برای اثبات کارایی، مدل روی ۵ مجموعه داده متنوع تست شده است:</p>
+                <ul style="font-size: 0.6em;">
+                    <li><b>ISIC-2018:</b> قطعه‌بندی ضایعات پوستی (Skin Lesion).</li>
+                    <li><b>Chest X-ray (JSRT/Montgomery):</b> قطعه‌بندی ریه.</li>
+                    <li><b>Clean-CC-CCII:</b> قطعه‌بندی عفونت COVID-19 در سی‌تی اسکن.</li>
+                    <li><b>DS Bowl 2018:</b> قطعه‌بندی هسته سلول (Nuclei).</li>
+                    <li><b>GlaS:</b> قطعه‌بندی غدد (Gland) در تصاویر بافت‌شناسی.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>نتایج تجربی (مقایسه کمی)</h3>
+                <div class="two-col">
+                    <div class="col" style="flex: 0.8; font-size: 0.45em; line-height: 1.8;">
+                        <ul>
+                            <li class="fragment">در این جدول عملکرد مدل روی دیتاست <b>2018 Data Science Bowl</b> مقایسه شده است.</li>
+                            <li class="fragment">همانطور که مشاهده می‌کنید، نسخه <b>TransAttUnet_R</b> (با اتصال Residual) بالاترین امتیاز DICE (۹۱.۶۲٪) را کسب کرده است.</li>
+                            <li class="fragment">مدل پیشنهادی نسبت به U-Net پایه (۷۵.۷۳٪) جهش چشمگیری در دقت داشته است.</li>
+                        </ul>
+                    </div>
+
+                    <div class="col" style="flex: 1.2;">
+                        <style>
+                            .res-table { border-collapse: collapse; width: 100%; font-size: 0.35em !important; }
+                            .res-table th { border-bottom: 1px solid #fff; padding: 5px; text-align: center; color: #ff79c6; }
+                            .res-table td { border-bottom: 1px solid #444; padding: 5px; text-align: center; }
+                            .best { color: #ff5555; font-weight: bold; } /* قرمز برای بهترین */
+                            .second { color: #8be9fd; font-weight: bold; } /* آبی برای دوم */
+                        </style>
+                        
+                        <table class="res-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>DICE</th>
+                                    <th>IoU</th>
+                                    <th>ACC</th>
+                                    <th>REC</th>
+                                    <th>PRE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align: left;">U-Net (Baseline)</td>
+                                    <td>75.73</td>
+                                    <td>91.03</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left;">Unet++</td>
+                                    <td>89.74</td>
+                                    <td class="best">92.55</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left;">DoubleU-Net</td>
+                                    <td>91.33</td>
+                                    <td>84.07</td>
+                                    <td>-</td>
+                                    <td>64.07</td>
+                                    <td class="best">94.96</td>
+                                </tr>
+                                <tr style="border-top: 2px solid #666;">
+                                    <td style="text-align: left;">TransAttUnet_C</td>
+                                    <td>90.04</td>
+                                    <td>84.36</td>
+                                    <td>97.05</td>
+                                    <td>90.03</td>
+                                    <td>91.23</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left;">TransAttUnet_D</td>
+                                    <td class="second">91.34</td>
+                                    <td>84.62</td>
+                                    <td class="second">97.37</td>
+                                    <td class="best">91.86</td>
+                                    <td>91.53</td>
+                                </tr>
+                                <tr style="background-color: rgba(80, 250, 123, 0.1);">
+                                    <td style="text-align: left; font-weight: bold;">TransAttUnet_R</td>
+                                    <td class="best">91.62</td>
+                                    <td class="second">84.98</td>
+                                    <td class="best">97.46</td>
+                                    <td class="second">91.85</td>
+                                    <td class="second">91.93</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="font-size: 0.25em; margin-top: 10px; color: #aaa;">* قرمز: بهترین نتیجه | آبی: دومین نتیجه برتر</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>نتیجه‌گیری و کارهای آینده</h3>
+                <ul style="font-size: 0.65em;">
+                    <li class="fragment"><b>نوآوری اصلی:</b> ترکیب موفقیت‌آمیز "توجه چند-سطحی" و "اتصالات پرش چند-مقیاسی".</li>
+                    <li class="fragment"><b>دستاورد:</b> غلبه بر محدودیت‌های U-Net در درک کانتکست سراسری (Global Context).</li>
+                    <li class="fragment"><b>محدودیت:</b> هزینه محاسباتی و حافظه بالا به دلیل استفاده از Self-Attention.</li>
+                    <li class="fragment"><b>آینده:</b> بهینه‌سازی مدل برای کاهش بار محاسباتی و تست روی داده‌های سه بعدی.</li>
+                </ul>
+            </section>
+
+
+                
+                <section>
+                    <h2> جزئیات پیاده‌سازی (Implementation)</h2>
+                    <p style="font-size: 1.2em; color: #8be9fd;">پیکربندی مدل و استراتژی آموزش</p>
+                    <div style="background-color: rgba(255, 121, 198, 0.1); border-right: 5px solid #ff79c6; padding: 20px; margin-top: 30px; text-align: right;">
+                        <p style="font-size: 0.7em; margin: 0;">
+                            <b>نکته مهم:</b> کلیه مراحل پیاده‌سازی و تنظیم پارامترها دقیقاً 
+                            <b>مطابق با استانداردهای پیشنهادی مقاله TransAttUnet</b> 
+                            انجام شده است تا صحت نتایج تضمین شود.
+                        </p>
+                    </div>
+                </section>
+                
+                    <section>
+                        <h2> معرفی مجموعه داده (Dataset)</h2>
+                        <p style="font-size: 1.2em; color: #ff79c6;">2018 Data Science Bowl (DSB2018)</p>
+                        <div style="margin-top: 30px; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border-right: 5px solid #bd93f9;">
+                            <p style="text-align: right; font-size: 0.8em; line-height: 1.6;">
+                                این دیتاست یکی از چالش‌برانگیزترین مجموعه‌ها برای <b>بخش‌بندی هسته سلول (Nuclei Segmentation)</b> است. هدف اصلی، شناسایی هسته سلول‌ها در تصاویر میکروسکوپی با شرایط نوری و بافتی بسیار متنوع است.
+                            </p>
+                        </div>
+                    </section>
+    
+                    <section>
+                        <h3>جزئیات آماری و نمونه‌ها</h3>
+                        
+                        <div class="two-col" style="align-items: center;">
+                            <div class="col" style="flex: 1;">
+                                <ul style="font-size: 0.6em; line-height: 2;">
+                                    <li><b>نام منبع:</b> Kaggle DSB 2018</li>
+                                    <li><b>تعداد تصاویر آموزش:</b> ۶۷۰ تصویر</li>
+                                    <li><b>تعداد تصاویر تست:</b> ۶۵ تصویر</li>
+                                    <li><b>نوع تصاویر:</b> میکروسکوپی (فلورسانس، بافت‌شناسی، Brightfield)</li>
+                                    <li><b>چالش اصلی:</b> <span style="color: #ff5555;">تنوع بسیار زیاد</span> در رنگ، اندازه و تراکم سلول‌ها</li>
+                                </ul>
+                            </div>
+    
+                            <div class="col" style="flex: 1; text-align: center;">
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="BOWL.png" style="width: 100%; border-radius: 10px; border: 2px solid #50fa7b; box-shadow: 0 0 15px rgba(80, 250, 123, 0.4);">
+                                    <div style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 8px; font-size: 0.4em; border-radius: 4px;">
+                                        نمونه‌ای از دیتاست (Ground Truth)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+    
+                    <section>
+                        <h3>پیش‌پردازش داده‌ها (Data Preprocessing)</h3>
+                        <p style="font-size: 0.7em; margin-bottom: 30px;">
+                            برای آماده‌سازی تصاویر جهت ورود به شبکه TransAttUnet، مراحل زیر انجام شده است:
+                        </p>
+    
+                        <div style="display: flex; justify-content: center; gap: 20px;">
+                            <div style="background: #44475a; padding: 20px; border-radius: 10px; width: 30%;">
+                                <div style="font-size: 2em;">📏</div>
+                                <h4 style="font-size: 0.7em; color: #8be9fd;">تغییر اندازه (Resizing)</h4>
+                                <p style="font-size: 0.5em;">تمام تصاویر به ابعاد استاندارد <b>256×256</b> پیکسل تغییر سایز داده شدند.</p>
+                            </div>
+    
+                            <div style="background: #44475a; padding: 20px; border-radius: 10px; width: 30%;">
+                                <div style="font-size: 2em;">⚖️</div>
+                                <h4 style="font-size: 0.7em; color: #ffb86c;">نرمال‌سازی (Normalization)</h4>
+                                <p style="font-size: 0.5em;">پیکسل‌ها به بازه [0, 1] نرمال شدند تا همگرایی مدل سریع‌تر شود.</p>
+                            </div>
+    
+                            <div style="background: #44475a; padding: 20px; border-radius: 10px; width: 30%;">
+                                <div style="font-size: 2em;">🎭</div>
+                                <h4 style="font-size: 0.7em; color: #50fa7b;">ماسک باینری</h4>
+                                <p style="font-size: 0.5em;">تمام ماسک‌ها به صورت باینری (۰ برای پس‌زمینه و ۱ برای هسته) تبدیل شدند.</p>
+                            </div>
+                        </div>
+                    </section>
+    
+                <section>
+                    <h3>تنظیمات و ابرپارامترها (Hyperparameters)</h3>
+                    <p style="font-size: 0.6em;">جدول زیر مقادیر استفاده شده در کد نهایی را نشان می‌دهد:</p>
+                    
+                    <div style="display: flex; justify-content: center; margin-top: 20px;">
+                        <table style="font-size: 0.65em; border-collapse: collapse; width: 80%;">
+                            <thead style="background-color: #44475a; color: #f8f8f2;">
+                                <tr>
+                                    <th style="padding: 10px; border: 1px solid #6272a4;">پارامتر</th>
+                                    <th style="padding: 10px; border: 1px solid #6272a4;">مقدار (Value)</th>
+                                    <th style="padding: 10px; border: 1px solid #6272a4;">هدف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid #6272a4;"><b>Image Size</b></td>
+                                    <td style="border: 1px solid #6272a4; color: #ff79c6; direction: ltr;">256 × 256</td>
+                                    <td style="border: 1px solid #6272a4;">تعادل بین جزئیات و حافظه</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #6272a4;"><b>Batch Size</b></td>
+                                    <td style="border: 1px solid #6272a4; color: #ff79c6; direction: ltr;">4</td>
+                                    <td style="border: 1px solid #6272a4;">مدیریت بهینه VRAM کارت گرافیک</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #6272a4;"><b>Learning Rate</b></td>
+                                    <td style="border: 1px solid #6272a4; color: #ff79c6; direction: ltr;">0.0001 (1e-4)</td>
+                                    <td style="border: 1px solid #6272a4;">همگرایی پایدار (Stable Convergence)</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #6272a4;"><b>Epochs</b></td>
+                                    <td style="border: 1px solid #6272a4; color: #ff79c6; direction: ltr;">100</td>
+                                    <td style="border: 1px solid #6272a4;">اطمینان از آموزش کامل شبکه</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>ادامه تنظیمات </h3>
+                    <div class="two-col">
+                        <div class="col" style="font-size: 0.55em;">
+                            <ul>
+
+                                <li style="margin-bottom: 20px;">
+                                    <b>بهینه‌ساز (Optimizer):</b> 
+                                    الگوریتم <span style="color: #50fa7b;">Adam</span> به دلیل تطبیق‌پذیری نرخ یادگیری در معماری‌های ترکیبی.
+                                </li>
+                                <li>
+                                    <b>تابع هزینه (Loss):</b> 
+                                    ترکیب (Weighted Sum) از <span style="color: #8be9fd;">Dice Loss</span> و <span style="color: #8be9fd;">BCE</span>.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col">
+                            <div style="background-color: #282a36; padding: 20px; border-radius: 10px; font-family: 'Fira Code', monospace; font-size: 0.45em; text-align: left; direction: ltr; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+ 
+                                <span style="color: #6272a4;"># Hyperparameters Config</span><br>
+                                IMG_SIZE = <span style="color: #bd93f9;">256</span><br>
+                                BATCH_SIZE = <span style="color: #bd93f9;">4</span><br>
+                                EPOCHS = <span style="color: #bd93f9;">100</span><br>
+                                LR = <span style="color: #bd93f9;">0.0001</span><br>
+                                <br>
+                                <span style="color: #6272a4;"># Setup</span><br>
+                                model = TransAttUnet(img_size=IMG_SIZE).cuda()<br>
+                                optimizer = optim.Adam(model.parameters(), lr=LR)<br>
+                                criterion = <span style="color: #50fa7b;">DiceBCELoss()</span><br>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+
+
+                
+                <section>
+
+                        <h2>نتایج تجربی (Experimental Results)</h2>
+                        <p style="font-size: 0.9em; color: #50fa7b; margin-bottom: 30px;">
+                            مقایسه عملکرد مدل پیاده‌سازی شده با نتایج مرجع
+                        </p>
+    
+                        <div class="two-col" style="align-items: center;">
+                            <div class="col" style="flex: 1;">
+                                <div style="border: 2px dashed #6272a4; padding: 20px; border-radius: 15px; background: rgba(98, 114, 164, 0.1); text-align: right;">
+                                    <div style="font-size: 3em; text-align: center; margin-bottom: 10px;">📊</div>
+                                    <p style="font-size: 0.8em; margin-bottom: 10px;">ارزیابی بر اساس معیارهای:</p>
+                                    <ul style="font-size: 0.7em; margin-right: 20px; line-height: 1.8;">
+                                        <li><b>Dice Coefficient</b> (ضریب دایس)</li>
+                                        <li><b>IoU</b> (اشتراک روی اجتماع)</li>
+                                    </ul>
+                                </div>
+                            </div>
+    
+                            <div class="col" style="flex: 1.5; text-align: center;">
+                                <div style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                                    <img src="Result.png" style="width: 100%; height: auto; border-radius: 5px;" alt="Result Graph">
+                                </div>
+                                <p style="font-size: 0.5em; margin-top: 10px; color: #8be9fd;">
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>مقایسه کمی (Quantitative Comparison)</h3>
+                        <p style="font-size: 0.6em; margin-bottom: 20px;">
+                            مقایسه نتایج مدل بازتولید شده (روی داده‌های Test) با نتایج گزارش شده در مقاله مرجع
+                        </p>
+                        
+                        <style>
+                            .res-table { width: 95%; margin: 0 auto; border-collapse: collapse; font-size: 0.65em; }
+                            .res-table th { background: #6272a4; color: #fff; padding: 12px; border: 1px solid #44475a; }
+                            .res-table td { padding: 10px; border: 1px solid #44475a; color: #f8f8f2; vertical-align: middle; }
+                            .highlight { color: #50fa7b; font-weight: bold; background-color: rgba(80, 250, 123, 0.1); }
+                            .ref-val { color: #bd93f9; } /* رنگ بنفش برای اعداد مقاله */
+                        </style>
+    
+                        <div style="display: flex; justify-content: center;">
+                            <table class="res-table">
+                                <thead>
+                                    <tr>
+                                        <th>معیار ارزیابی (Metric)</th>
+                                        <th>مقاله اصلی (Paper Reference)</th>
+                                        <th>مدل ما (My Model - Test)</th>
+                                        <th>تحلیل (Gap)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><b>Dice Coefficient</b></td>
+                                        <td style="direction: ltr;" class="ref-val">91.62%</td>
+                                        <td style="direction: ltr;" class="highlight">89.95%</td>
+                                        <td>همگرایی مطلوب (1.6%-)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>IoU</b></td>
+                                        <td style="direction: ltr;" class="ref-val">84.98%</td>
+                                        <td style="direction: ltr;" class="highlight">81.84%</td>
+                                        <td> قابل قبول</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Accuracy</b></td>
+                                        <td style="direction: ltr;" class="ref-val">97.46%</td>
+                                        <td style="direction: ltr;" class="highlight">96.93%</td>
+                                        <td style="color: #ffb86c;">بسیار نزدیک (0.5%-)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Recall (Sensitivity)</b></td>
+                                        <td style="direction: ltr;" class="ref-val">91.85%</td>
+                                        <td style="direction: ltr;" class="highlight">91.39%</td>
+                                        <td style="color: #ffb86c;"> عالی (0.4%-)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Precision</b></td>
+                                        <td style="direction: ltr;" class="ref-val">91.93%</td>
+                                        <td style="direction: ltr;" class="highlight">88.81%</td>
+                                        <td> خوب</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 25px; border-top: 1px solid #6272a4; padding-top: 10px; display: flex; justify-content: space-between; font-size: 0.4em; color: #aaa;">
+                            <span> Paper Reference: اعداد گزارش شده در مقاله اصلی TransAttUnet</span>
+                            <span> My Model: نتایج تست پس از ۱۰۰ اپوک آموزش</span>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>نتایج کیفی (Qualitative Results)</h3>
+                        <p style="font-size: 0.5em;">نمایش عملکرد مدل در بخش‌بندی نواحی چالش‌برانگیز</p>
+                        
+                        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+                            <div style="flex: 1; text-align: center;">
+                                <p style="font-size: 0.5em; color: #8be9fd;">تصویر ورودی (Input)</p>
+                                <img src="input.png" style="width: 100%; border-radius: 8px; border: 2px solid #6272a4; height: 200px; object-fit: cover;">
+                            </div>
+                            <div style="flex: 1; text-align: center;">
+                                <p style="font-size: 0.5em; color: #ffb86c;">ماسک واقعی (Ground Truth)</p>
+                                <img src="True.png" style="width: 100%; border-radius: 8px; border: 2px solid #6272a4; height: 200px; object-fit: cover;">
+                            </div>
+                            <div style="flex: 1; text-align: center;">
+                                <p style="font-size: 0.5em; color: #50fa7b;">پیش‌بینی مدل (TransAttUnet)</p>
+                                <img src="predict.png" style="width: 100%; border-radius: 8px; border: 2px solid #50fa7b; height: 200px; object-fit: cover;">
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(80, 250, 123, 0.1); padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.5em; text-align: right; border-right: 4px solid #50fa7b;">
+                            <b>تحلیل:</b> همانطور که مشاهده می‌شود، مدل توانسته است مرزهای (Boundaries) نامنظم ضایعه را با دقت بسیار بالا و نزدیک به ماسک پزشک تشخیص دهد. مکانیزم Attention به خوبی نویزهای اطراف بافت را فیلتر کرده است.
+                        </div>
+                    </section>
+    
+                
+
+                
+                    <section>
+                        <h3>روند آموزش و همگرایی (Training Curve)</h3>
+                        <div class="two-col" style="align-items: center;">
+                            
+                            <div class="col" style="flex: 2.5;">
+                                <div style="background: white; padding: 5px; border-radius: 10px; height: 550px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                                    <img src="Epoch.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Training Curve"/>
+                                </div>
+                            </div>
+    
+                            <div class="col" style="flex: 1; font-size: 0.55em; text-align: right; margin-right: 20px;">
+                                <h4 style="color: #ff79c6; border-bottom: 2px solid #ff79c6; display: inline-block; padding-bottom: 5px;">نکات کلیدی:</h4>
+                                <ul style="margin-top: 20px; line-height: 1.8;">
+                                    <li style="margin-bottom: 15px;"><b>پایداری آموزش:</b> ثبات نمودار پس از اپوک ۲۰.</li>
+                                    <li style="margin-bottom: 15px;"><b>کنترل Overfitting:</b> نزدیکی خطوط Train و Validation به یکدیگر.</li>
+                                    <li><b>سرعت یادگیری:</b> همگرایی سریع به دلیل مکانیزم Attention.</li>
+                                </ul>
+                            </div>
+    
+                        </div>
+                    </section>
+                
+                    <section>
+                        <h2>نحوه پیاده‌سازی و ساختار کد</h2>
+                        <p style="font-size: 0.9em; color: #f1fa8c; margin-bottom: 30px;">
+                            جریان اجرای پروژه در ۸ بخش اصلی (Cells)
+                        </p>
+    
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right;">
+                            
+                            <div class="col-right">
+                                
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #ff79c6;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [1]: Imports & Config</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۱. پیکربندی و کتابخانه‌ها</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(تنظیمات اولیه و Seedگذاری)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #bd93f9;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [2]: Preprocessing</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۲. آماده‌سازی داده‌ها</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(استخراج فایل‌ها و پیش‌پردازش)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #ff5555;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [3]: Model Architecture</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۳. معماری مدل (TransAttUnet)</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(تجمیع ماژول‌های SAA و U-Net)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #50fa7b;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [4]: Dataset Class</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۴. کلاس دیتاست</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(کلاس سفارشی و ابزارهای کمکی)</span>
+                                    </div>
+                                </div>
+    
+                            </div>
+    
+                            <div class="col-left">
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #8be9fd;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [5]: Training Pipeline</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۵. پایپ‌لاین آموزش</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(توابع Train و Validation)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #f1fa8c;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [6]: Execution Loop</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۶. حلقه اصلی اجرا</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(اجرای ۱۰۰ اپوک و ذخیره مدل)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #ffb86c;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [7]: Visualization</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۷. مصورسازی نتایج</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(رسم نمودارها و نمایش ماسک‌ها)</span>
+                                    </div>
+                                </div>
+    
+                                <div style="background: #282a36; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #ffffff;">
+                                    <span style="font-family: monospace; color: #6272a4; font-size: 0.5em;">In [8]: Final Evaluation</span>
+                                    <div style="font-size: 0.6em; color: #f8f8f2;">
+                                        <b>۸. ارزیابی نهایی</b>
+                                        <br><span style="color: #aaa; font-size: 0.8em;">(هیستوگرام‌ها و مقایسه کمی)</span>
+                                    </div>
+                                </div>
+    
+                            </div>
+                        </div>
+                    </section>
+    
+                <section>
+                    <h2>نتیجه‌گیری نهایی</h2>
+                    <ul>
+                        <li class="fragment"> <b>تلفیق موفق CNN و Transformer:</b> مدل TransAttUnet توانست با موفقیت ویژگی‌های محلی و سراسری را ترکیب کند.</li>
+                        <li class="fragment"> <b>دقت بالاتر:</b> دستیابی به Dice Score حدودا ۹۰٪ نشان‌دهنده برتری نسبت به مدل‌های پایه مثل U-Net است.</li>
+                        <li class="fragment"> <b>کاربرد پزشکی:</b> این مدل قابلیت اطمینان بالایی برای استفاده در دستیار هوشمند پزشک (CAD) دارد.</li>
+                    </ul>
+                    <div class="fragment" style="margin-top: 40px; text-align: center;">
+                        <h3 style="color: #8be9fd;">سپاس از توجه شما </h3>
+                    </div>
+                </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/math/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/math/math.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            rtl: true,     
+            controls: true,  
+            progress: true, 
+            center: true,    
+            fragments: true, 
+            plugins: [ RevealMath.KaTeX ],
+
+            keyboard: {
+                39: function() { Reveal.slide(Reveal.getIndices().h - 1); }, 
+                
+                37: function() { Reveal.slide(Reveal.getIndices().h + 1); },
+
+                40: function() { Reveal.nextFragment(); },
+
+                38: function() { Reveal.prevFragment(); }
+            }
+        });
+    </script>
+</body>
+</html>

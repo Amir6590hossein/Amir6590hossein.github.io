@@ -602,28 +602,25 @@
     
                 
 
-                
-                    <section>
+                                    <section>
                         <h3>روند آموزش و همگرایی (Training Curve)</h3>
-                        <div class="two-col" style="align-items: center;">
-                            
-                            <div class="col" style="flex: 2.5;">
-                                <div style="background: white; padding: 5px; border-radius: 10px; height: 550px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
-                                    <img src="Epoch.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Training Curve"/>
-                                </div>
+                        <div class="two-col">
+                            <div class="col" style="flex: 2;">
+                                <div style="background: white; padding: 10px; border-radius: 10px; height: 300px; display: flex; align-items: center; justify-content: center; color: #333;">
+                                    <img src="Epoch.png"/>
+                                    </div>
                             </div>
-    
-                            <div class="col" style="flex: 1; font-size: 0.55em; text-align: right; margin-right: 20px;">
-                                <h4 style="color: #ff79c6; border-bottom: 2px solid #ff79c6; display: inline-block; padding-bottom: 5px;">نکات کلیدی:</h4>
-                                <ul style="margin-top: 20px; line-height: 1.8;">
-                                    <li style="margin-bottom: 15px;"><b>پایداری آموزش:</b> ثبات نمودار پس از اپوک ۲۰.</li>
-                                    <li style="margin-bottom: 15px;"><b>کنترل Overfitting:</b> نزدیکی خطوط Train و Validation به یکدیگر.</li>
-                                    <li><b>سرعت یادگیری:</b> همگرایی سریع به دلیل مکانیزم Attention.</li>
+                            <div class="col" style="flex: 1; font-size: 0.55em; text-align: right;">
+                                <h4 style="color: #ff79c6;">نکات کلیدی:</h4>
+                                <ul>
+                                    <li style="margin-bottom: 15px;"><b>پایداری آموزش:</b> نمودار نشان می‌دهد که مدل از اپوک ۲۰ به بعد به پایداری نسبی رسیده است.</li>
+                                    <li style="margin-bottom: 15px;"><b>جلوگیری از Overfitting:</b> فاصله کم بین نمودار Train و Validation نشان‌دهنده عملکرد صحیح لایه‌های Dropout و آگمنتیشن است.</li>
+                                    <li><b>سرعت همگرایی:</b> به دلیل استفاده از ترنسفورمر، سرعت یادگیری ویژگی‌های سراسری (Global) نسبت به U-Net معمولی بیشتر است.</li>
                                 </ul>
                             </div>
-    
                         </div>
                     </section>
+    
                 
                     <section>
                         <h2>نحوه پیاده‌سازی و ساختار کد</h2>
